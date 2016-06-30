@@ -8,13 +8,16 @@ import java.util.Set;
 
 public final class TableNameParser {
 
+	private static final String TOKEN_SEMI_COLON = ";";
+	private static final String TOKEN_PARAN_START = "(";
 	private static final String TOKEN_COMMA = ",";
 	private static final String KEYWORD_JOIN = "join";
 	private static final String KEYWORD_INTO = "into";
 	private static final String KEYWORD_TABLE = "table";
 	private static final String KEYWORD_FROM = "from";
+	private static final String KEYWORD_USING = "using";
 	
-	private List<String> concerned = Arrays.asList(KEYWORD_TABLE, KEYWORD_INTO, KEYWORD_JOIN);
+	private List<String> concerned = Arrays.asList(KEYWORD_TABLE, KEYWORD_INTO, KEYWORD_JOIN, KEYWORD_USING);
 	private Set<String> tables = new HashSet<String>();
 
 	public TableNameParser(final String sql) {
@@ -27,17 +30,15 @@ public final class TableNameParser {
 				processFromToken(tokens, index);
 			}
 			else if (concerned.contains(currentToken.toLowerCase())) {	
-				String nextToken = tokens[index++];			
-				if(!nextToken.equals("(")) {					
-					tables.add(nextToken);
-				}
+				String nextToken = tokens[index++];	
+				considerInclusion(nextToken);			
 
 				if (moreTokens(tokens, index)) {					
 					nextToken = tokens[index++];
 				}
 				while(nextToken.equals(TOKEN_COMMA) ) {
 					nextToken = tokens[index++];
-					tables.add(nextToken);
+					considerInclusion(nextToken);
 				}
 			}
 		}
@@ -49,45 +50,51 @@ public final class TableNameParser {
 
 	private String normalized(final String sql) {
 		String normalized = sql.replaceAll("\\r\\n|\\r|\\n", " ").replaceAll(TOKEN_COMMA, " , ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ");
-		if (normalized.endsWith(";")) {
+		if (normalized.endsWith(TOKEN_SEMI_COLON)) {
 			normalized = normalized.substring(0, normalized.length() - 1);
 		}
 		return normalized;
 	}
 
-	private void processFromToken(final String[] split, int index) {
-		String currentToken = split[index++];
+	private void processFromToken(final String[] tokens, int index) {
+		String currentToken = tokens[index++];
 		
 		String nextToken = null;
-		if (moreTokens(split, index)) {
-			nextToken = split[index++];
+		if (moreTokens(tokens, index)) {
+			nextToken = tokens[index++];
 		}
-		this.tables.add(currentToken);
+		considerInclusion(currentToken);
 		if (nextToken != null && nextToken.equals(TOKEN_COMMA)) {
 			while(nextToken.equals(TOKEN_COMMA)) {
-				currentToken = split[index++];
-				this.tables.add(currentToken);
-				nextToken = split[index++];
+				currentToken = tokens[index++];
+				considerInclusion(currentToken);
+				nextToken = tokens[index++];
 			}
 		} else {
 			String nextNextToken = null;
-			if (moreTokens(split, index)) {
-				nextNextToken = split[index++];;
+			if (moreTokens(tokens, index)) {
+				nextNextToken = tokens[index++];;
 			}
 			if (nextNextToken != null && nextNextToken.equals(TOKEN_COMMA)) {
 				while(nextNextToken.equals(TOKEN_COMMA)) {
-					if (moreTokens(split, index)) {						
-						currentToken = split[index++];
+					if (moreTokens(tokens, index)) {						
+						currentToken = tokens[index++];
 					}
-					if (moreTokens(split, index)) {
-						nextToken = split[index++];
+					if (moreTokens(tokens, index)) {
+						nextToken = tokens[index++];
 					}
-					if (moreTokens(split, index)) {
-						nextNextToken = split[index++];
+					if (moreTokens(tokens, index)) {
+						nextNextToken = tokens[index++];
 					}
-					this.tables.add(currentToken);
+					considerInclusion(currentToken);
 				}
 			}			
+		}		
+	}
+
+	private void considerInclusion(String token) {
+		if(!token.equals(TOKEN_PARAN_START)) {					
+			this.tables.add(token.toLowerCase());
 		}		
 	}
 

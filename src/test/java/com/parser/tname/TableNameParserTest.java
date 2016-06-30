@@ -89,6 +89,81 @@ public final class TableNameParserTest {
 			    + "    AND BD1.IS_DYNAMIC_CATEGORY!= 1"
 			     + "   AND item.cat_map_id         =pr.product_id"
 			    + "    )";
+	
+	private static final String SQL_MERGE_COMPLEX = "MERGE INTO  cf_procedure proc USING"
+			+ " ("
+			+ " WITH NON_STRATEGY_DETAILS AS"
+			+ "   ("
+			+ "   SELECT /*+ materialize*/ cf_strategy_id"
+			+ "    FROM"
+			+ "     ( SELECT  strat.cf_strategy_id"
+			+ "        FROM cf_strategy strat,"
+			+ "             struct_doc_Sect_ver prodGrp"
+			+ "        WHERE  strat.src_id               = prodGrp.struct_doc_sect_id"
+			+ "                 AND strat.src_mgr_id     = prodGrp.mgr_id"
+			+ "                 AND strat.src_ver_num    = prodGrp.ver_num"
+			+ "                 AND strat.module_type   IN ('COMPL','PRCMSTR')"
+			+ "   )  ),"
+			+ "   NON_STRATEGY_COMPS AS"
+			+ "   ("
+			+ "   SELECT /*+ materialize*/ cf_component_id"
+			+ "   FROM"
+			+ "   ("
+			+ "     SELECT comp.cf_component_id AS cf_component_id"
+			+ "     FROM   cf_component comp,"
+			+ "            tier_basis_ver tb"
+			+ "     WHERE  comp.bucket_src_id   = tb.tier_basis_id"
+			+ "             AND comp.bucket_src_mgr_id  = tb.mgr_id"
+			+ "             AND comp.bucket_src_ver_num = tb.ver_num"
+			+ "             AND comp.module_type       IN ('COMPL','PRCMSTR')"
+			+ "   )"
+			+ "   ) ,"
+			+ " NON_STRAT_PERIODS AS ("
+			+ "   SELECT /*+ materialize*/ cf_period_id"
+			+ "   FROM"
+			+ "         cf_period per,"
+			+ "         struct_doc_sect_ver prodGrp"
+			+ "   WHERE  per.src_id            = prodGrp.struct_doc_sect_id"
+			+ "         AND per.src_mgr_id     = prodGrp.mgr_id"
+			+ "         AND per.src_ver_num    = prodGrp.ver_num"
+			+ "         AND per.module_type    IN ('COMPL','PRCMSTR')"
+			+ "         AND per.pmt_status NOT IN ('TERM','REV')"
+
+			+ "    SELECT DISTINCT cf_procedure_id"
+			+ "   FROM"
+			+ "     (SELECT /*+ LEADING(comp,proc)*/"
+			+ "           proc.cf_procedure_id AS cf_procedure_id"
+			+ "     FROM  non_strategy_comps comp,"
+			+ "           cf_procedure proc"
+			+ "     WHERE proc.variable_name          ='CALCULATION_LEVEL_RESULT'"
+			+ "           AND comp.cf_component_id    = proc.cf_component_id"
+			+ "    UNION ALL"
+			+ "     SELECT  /*+ LEADING(strat,proc)*/"
+			+ "           proc.cf_procedure_id AS cf_procedure_id"
+			+ "     FROM  cf_procedure proc,"
+			+ "           non_strategy_details strat"
+			+ "     WHERE proc.variable_name       ='CALCULATION_LEVEL_RESULT'"
+			+ "           AND strat.cf_strategy_id = proc.cf_strategy_id"
+			+ "     UNION ALL"
+			+ "     SELECT  /*+ LEADING(strat,proc)*/"
+			+ "          proc.cf_procedure_id AS cf_procedure_id"
+			+ "     FROM cf_procedure proc,"
+			+ "          non_strat_periods periods"
+			+ "     WHERE proc.variable_name       ='CALCULATION_LEVEL_RESULT'"
+			+ "           AND periods.CF_PERIOD_ID = proc.period_id"
+			+ "     )"
+			+ "      )TMP ON (proc.cf_procedure_id = tmp.cf_procedure_id)"
+			+ " WHEN MATCHED THEN"
+			+ "   UPDATE SET proc.variable_name = 'TierResultSSName';";
+
+	private static final String SQL_MERGE_COMPLEX_TWO = " MERGE INTO cf_procedure_ver procVer USING"
+			+ "   (SELECT cf_procedure_id"
+			+ "    FROM cf_procedure proc"
+			+ "    WHERE proc.variable_name                  = 'TierResultSSName'"
+			+ "   ) proc_main ON (proc_main.cf_procedure_id = procVer.cf_procedure_id )"
+			+ " WHEN MATCHED THEN"
+			+ "   UPDATE SET procVer.variable_name = 'TierResultSSName'"
+			+ "   WHERE procVer.variable_name <> 'TierResultSSName';";
 
 	@Test
 	public void testSelectOneTable() {
@@ -164,13 +239,13 @@ public final class TableNameParserTest {
 	
 	@Test
 	public void testInsertComplex() {
-		assertThat(new TableNameParser(SQL_COMPLEX_ONE).tables(), equalTo(asSet("dr_bd_static_product", "ITEM", "DR_BUNDLE", "DR_BUNDLE_DISCOUNT", "DR_BD_PRODUCT", "map_edge_ver")));
+		assertThat(new TableNameParser(SQL_COMPLEX_ONE).tables(), equalTo(asSet("dr_bd_static_product", "item", "dr_bundle", "dr_bundle_discount", "dr_bd_product", "map_edge_ver")));
 	}
 	
 	@Test
 	public void testInsertWithSelect() {
 		String sql = "INSERT INTO Customers (CustomerName, Country) SELECT SupplierName, Country FROM Suppliers;";
-		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("Customers", "Suppliers")));
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("customers", "suppliers")));
 	}
 
 	@Test
@@ -182,7 +257,35 @@ public final class TableNameParserTest {
 	@Test
 	public void testAlter() {
 		String sql = "ALTER TABLE Persons ADD UNIQUE (P_Id)";
-		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("Persons")));
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("persons")));
+	}
+	
+	@Test
+	public void testDrop() {
+		String sql = "DROP table tname";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("tname")));
+	}
+	
+	@Test
+	public void testMerge() {
+		String sql = "MERGE INTO employees e  USING hr_records h  ON (e.id = h.emp_id) WHEN MATCHED THEN  UPDATE SET e.address = h.address  WHEN NOT MATCHED THEN    INSERT (id, address) VALUES (h.emp_id, h.address);";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("employees", "hr_records")));
+	}
+	
+	@Test
+	public void testMergeUsingQuery() {
+		String sql = "MERGE INTO employees e USING (SELECT * FROM hr_records WHERE start_date > ADD_MONTHS(SYSDATE, -1)) h  ON (e.id = h.emp_id)  WHEN MATCHED THEN  UPDATE SET e.address = h.address WHEN NOT MATCHED THEN INSERT (id, address) VALUES (h.emp_id, h.address)";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("employees", "hr_records")));
+	}
+	
+	@Test
+	public void testMergeComplexQuery() {
+		assertThat(new TableNameParser(SQL_MERGE_COMPLEX).tables(), equalTo(asSet("non_strategy_comps","cf_procedure", "struct_doc_sect_ver", "cf_period", "cf_component", "cf_strategy", "tier_basis_ver", "non_strategy_details", "cf_procedure", "non_strat_periods")));
+	}
+	
+	@Test
+	public void testMergeComplexQuery2() {
+		assertThat(new TableNameParser(SQL_MERGE_COMPLEX_TWO).tables(), equalTo(asSet("cf_procedure_ver", "cf_procedure")));
 	}
 	
 	private static Collection<String> asSet(String... a) {
