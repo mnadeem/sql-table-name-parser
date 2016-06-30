@@ -353,7 +353,7 @@ public final class TableNameParserTest {
 		String sql = "UPDATE (SELECT table1.value as OLD, table2.CODE as NEW FROM table1 INNER JOIN table2 ON table1.value = table2.DESC  WHERE table1.UPDATETYPE='blah' ) t SET t.OLD = t.NEW";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
 	}
-	
+
 	private static Collection<String> asSet(String... a) {
 		Set<String> result = new HashSet<String>();
 		for (String item : a) {

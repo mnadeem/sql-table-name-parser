@@ -36,22 +36,30 @@ public final class TableNameParser {
 		while (moreTokens(tokens, index)) {
 			String currentToken = tokens[index++];
 
-			if(KEYWORD_FROM.equals(currentToken.toLowerCase())) {
+			if(isFromToken(currentToken)) {
 				processFromToken(tokens, index);
 			}
-			else if (concerned.contains(currentToken.toLowerCase())) {	
+			else if (shouldProcess(currentToken)) {	
 				String nextToken = tokens[index++];	
 				considerInclusion(nextToken);			
 
 				if (moreTokens(tokens, index)) {					
 					nextToken = tokens[index++];
 				}
-				while(nextToken.equals(TOKEN_COMMA) ) {
+				while(nextToken.equals(TOKEN_COMMA)) {
 					nextToken = tokens[index++];
 					considerInclusion(nextToken);
 				}
 			}
 		}
+	}
+
+	private boolean shouldProcess(String currentToken) {
+		return concerned.contains(currentToken.toLowerCase());
+	}
+
+	private boolean isFromToken(String currentToken) {
+		return KEYWORD_FROM.equals(currentToken.toLowerCase());
 	}
 
 	private String normalized(final String sql) {
@@ -107,7 +115,7 @@ public final class TableNameParser {
 		}
 	}
 
-	private boolean shouldProcessMultipleTables(String nextToken) {
+	private boolean shouldProcessMultipleTables(final String nextToken) {
 		return nextToken != null && nextToken.equals(TOKEN_COMMA);
 	}
 
