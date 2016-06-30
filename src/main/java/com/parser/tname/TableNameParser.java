@@ -41,15 +41,15 @@ public final class TableNameParser {
 			}
 			else if (shouldProcess(currentToken)) {	
 				String nextToken = tokens[index++];	
-				considerInclusion(nextToken);			
+				considerInclusion(nextToken);
 
-				if (moreTokens(tokens, index)) {					
+				if (moreTokens(tokens, index)) {
 					nextToken = tokens[index++];
 				}
-				while(nextToken.equals(TOKEN_COMMA)) {
+				/*while(nextToken.equals(TOKEN_COMMA)) {
 					nextToken = tokens[index++];
 					considerInclusion(nextToken);
-				}
+				}*/
 			}
 		}
 	}
@@ -82,7 +82,7 @@ public final class TableNameParser {
 		if (shouldProcessMultipleTables(nextToken)) {
 			processNonAliasedMultiTables(tokens, index, nextToken);
 		} else {
-			processAliasedMultiTables(tokens, index, currentToken);			
+			processAliasedMultiTables(tokens, index, currentToken);
 		}		
 	}
 
@@ -101,7 +101,7 @@ public final class TableNameParser {
 		}
 		if (shouldProcessMultipleTables(nextNextToken)) {
 			while(nextNextToken.equals(TOKEN_COMMA)) {
-				if (moreTokens(tokens, index)) {						
+				if (moreTokens(tokens, index)) {
 					currentToken = tokens[index++];
 				}
 				if (moreTokens(tokens, index)) {
@@ -124,9 +124,9 @@ public final class TableNameParser {
 	}
 
 	private void considerInclusion(final String token) {
-		if(!ignored.contains(token.toLowerCase())) {					
+		if(!ignored.contains(token.toLowerCase())) {
 			this.tables.add(token.toLowerCase());
-		}		
+		}
 	}
 
 	public Collection<String> tables() {
