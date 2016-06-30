@@ -8,24 +8,34 @@ import java.util.Set;
 
 public final class TableNameParser {
 
+	private static final String SPACE = " ";
+	private static final String REGEX_SPACE = "\\s+";
+
 	private static final String TOKEN_SEMI_COLON = ";";
 	private static final String TOKEN_PARAN_START = "(";
 	private static final String TOKEN_COMMA = ",";
+	private static final String TOKEN_SET = "set";
+	private static final String TOKEN_OF = "of";
+
 	private static final String KEYWORD_JOIN = "join";
 	private static final String KEYWORD_INTO = "into";
 	private static final String KEYWORD_TABLE = "table";
 	private static final String KEYWORD_FROM = "from";
 	private static final String KEYWORD_USING = "using";
-	
-	private List<String> concerned = Arrays.asList(KEYWORD_TABLE, KEYWORD_INTO, KEYWORD_JOIN, KEYWORD_USING);
+	private static final String KEYWORD_UPDATE = "update";
+
+	private List<String> concerned = Arrays.asList(KEYWORD_TABLE, KEYWORD_INTO, KEYWORD_JOIN, KEYWORD_USING, KEYWORD_UPDATE);
+	private List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF);
+
 	private Set<String> tables = new HashSet<String>();
 
 	public TableNameParser(final String sql) {
 		String normalized = normalized(sql);
-		String[] tokens = normalized.split("\\s+");
+		String[] tokens = normalized.split(REGEX_SPACE);
 		int index = 0;
 		while (moreTokens(tokens, index)) {
 			String currentToken = tokens[index++];
+
 			if(KEYWORD_FROM.equals(currentToken.toLowerCase())) {
 				processFromToken(tokens, index);
 			}
@@ -44,12 +54,8 @@ public final class TableNameParser {
 		}
 	}
 
-	private boolean moreTokens(final String[] tokens, int index) {
-		return index < tokens.length;
-	}
-
 	private String normalized(final String sql) {
-		String normalized = sql.replaceAll("\\r\\n|\\r|\\n", " ").replaceAll(TOKEN_COMMA, " , ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ");
+		String normalized = sql.replaceAll("\\r\\n|\\r|\\n", SPACE).replaceAll(TOKEN_COMMA, " , ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ");
 		if (normalized.endsWith(TOKEN_SEMI_COLON)) {
 			normalized = normalized.substring(0, normalized.length() - 1);
 		}
@@ -58,42 +64,59 @@ public final class TableNameParser {
 
 	private void processFromToken(final String[] tokens, int index) {
 		String currentToken = tokens[index++];
+		considerInclusion(currentToken);
 		
 		String nextToken = null;
 		if (moreTokens(tokens, index)) {
 			nextToken = tokens[index++];
 		}
-		considerInclusion(currentToken);
-		if (nextToken != null && nextToken.equals(TOKEN_COMMA)) {
-			while(nextToken.equals(TOKEN_COMMA)) {
-				currentToken = tokens[index++];
-				considerInclusion(currentToken);
-				nextToken = tokens[index++];
-			}
+
+		if (shouldProcessMultipleTables(nextToken)) {
+			processNonAliasedMultiTables(tokens, index, nextToken);
 		} else {
-			String nextNextToken = null;
-			if (moreTokens(tokens, index)) {
-				nextNextToken = tokens[index++];;
-			}
-			if (nextNextToken != null && nextNextToken.equals(TOKEN_COMMA)) {
-				while(nextNextToken.equals(TOKEN_COMMA)) {
-					if (moreTokens(tokens, index)) {						
-						currentToken = tokens[index++];
-					}
-					if (moreTokens(tokens, index)) {
-						nextToken = tokens[index++];
-					}
-					if (moreTokens(tokens, index)) {
-						nextNextToken = tokens[index++];
-					}
-					considerInclusion(currentToken);
-				}
-			}			
+			processAliasedMultiTables(tokens, index, currentToken);			
 		}		
 	}
 
-	private void considerInclusion(String token) {
-		if(!token.equals(TOKEN_PARAN_START)) {					
+	private void processNonAliasedMultiTables(final String[] tokens, int index, String nextToken) {
+		while(nextToken.equals(TOKEN_COMMA)) {
+			String currentToken = tokens[index++];
+			considerInclusion(currentToken);
+			nextToken = tokens[index++];
+		}
+	}
+
+	private void processAliasedMultiTables(final String[] tokens, int index, String currentToken) {
+		String nextNextToken = null;
+		if (moreTokens(tokens, index)) {
+			nextNextToken = tokens[index++];;
+		}
+		if (shouldProcessMultipleTables(nextNextToken)) {
+			while(nextNextToken.equals(TOKEN_COMMA)) {
+				if (moreTokens(tokens, index)) {						
+					currentToken = tokens[index++];
+				}
+				if (moreTokens(tokens, index)) {
+					index++;
+				}
+				if (moreTokens(tokens, index)) {
+					nextNextToken = tokens[index++];
+				}
+				considerInclusion(currentToken);
+			}
+		}
+	}
+
+	private boolean shouldProcessMultipleTables(String nextToken) {
+		return nextToken != null && nextToken.equals(TOKEN_COMMA);
+	}
+
+	private boolean moreTokens(final String[] tokens, int index) {
+		return index < tokens.length;
+	}
+
+	private void considerInclusion(final String token) {
+		if(!ignored.contains(token.toLowerCase())) {					
 			this.tables.add(token.toLowerCase());
 		}		
 	}

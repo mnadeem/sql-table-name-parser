@@ -273,6 +273,30 @@ public final class TableNameParserTest {
 	}
 	
 	@Test
+	public void testDropFunction() {
+		String sql = "DROP FUNCTION functionName;";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet()));
+	}
+	
+	@Test
+	public void testDropProcedure() {
+		String sql = "drop procedure procedureName";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet()));
+	}
+	
+	@Test
+	public void testDropView() {
+		String sql = "DROP VIEW viewName";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet()));
+	}
+	
+	@Test
+	public void testDropIndex() {
+		String sql = "DROP INDEX indexName";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet()));
+	}
+	
+	@Test
 	public void testUnionAll() {
 		String sql = "SELECT coluname(s) FROM table1 UNION ALL SELECT coluname(s) FROM table2;";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
@@ -298,6 +322,36 @@ public final class TableNameParserTest {
 	@Test
 	public void testMergeComplexQuery2() {
 		assertThat(new TableNameParser(SQL_MERGE_COMPLEX_TWO).tables(), equalTo(asSet("cf_procedure_ver", "cf_procedure")));
+	}
+	
+	@Test
+	public void testCreateTable() {
+		String sql = "CREATE TABLE Persons(PersonID int,LastName varchar(255),FirstName varchar(255),Address varchar(255),City varchar(255));";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("persons")));
+	}
+	
+	@Test
+	public void testCreateType() {
+		String sql = "CREATE OR REPLACE TYPE TYPE_NAME IS TABLE OF VARCHAR2(100)";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet()));
+	}
+
+	@Test
+	public void testUpdateTable() {
+		String sql = "UPDATE tableName SET column1 = expression1, column2 = expression2";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("tablename")));
+	}
+
+	@Test
+	public void testUpdateTableSubQuery() {
+		String sql = "UPDATE table1 SET table1.value = (SELECT table2.CODE FROM table2 WHERE table1.value = table2.DESC) WHERE table1.UPDATETYPE='blah' AND EXISTS (SELECT table2.CODE  FROM table2    WHERE table1.value = table2.DESC);";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
+	}
+	
+	@Test
+	public void testUpdateTableSubQuery2() {
+		String sql = "UPDATE (SELECT table1.value as OLD, table2.CODE as NEW FROM table1 INNER JOIN table2 ON table1.value = table2.DESC  WHERE table1.UPDATETYPE='blah' ) t SET t.OLD = t.NEW";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
 	}
 	
 	private static Collection<String> asSet(String... a) {
