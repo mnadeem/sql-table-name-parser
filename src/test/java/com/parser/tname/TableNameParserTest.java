@@ -259,11 +259,23 @@ public final class TableNameParserTest {
 		String sql = "ALTER TABLE Persons ADD UNIQUE (P_Id)";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("persons")));
 	}
+
+	@Test
+	public void testAlter2() {
+		String sql = "ALTER TABLE table_name MODIFY coluname datatype";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table_name")));
+	}
 	
 	@Test
 	public void testDrop() {
 		String sql = "DROP table tname";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("tname")));
+	}
+	
+	@Test
+	public void testUnionAll() {
+		String sql = "SELECT coluname(s) FROM table1 UNION ALL SELECT coluname(s) FROM table2;";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
 	}
 	
 	@Test
