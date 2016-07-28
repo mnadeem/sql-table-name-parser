@@ -224,7 +224,15 @@ public final class TableNameParserTest {
 		String sql = "SELECT coluname(s) FROM table1 left outer join table2 ON table1.coluname=table2.coluname";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
 	}
+	
+	
+	@Test
+	public void testShouldIgnoreDual() {
+		String sql = "select * from dual";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet()));
+	}
 
+	
 	@Test
 	public void testSelectTwoJoinWithAliase() {
 		assertThat(new TableNameParser(SQL_SELECT_THREE_JOIN_WITH_ALIASE).tables(), equalTo(asSet("colleges", "students", "results")));
@@ -354,6 +362,12 @@ public final class TableNameParserTest {
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
 	}
 
+	@Test
+	public void testUpdateTableSubQueryWithOracleHint() {
+		String sql = "update /*+ PARALLEL OPT_PARAM('parallel_min_percent','0') */ cf_eligible ec set ec.END_DATE = ec.END_DATE + INTERVAL '0 0:0:0.999' DAY TO SECOND WHERE to_char(ec.END_DATE,'FF')='000';";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("cf_eligible")));
+	}
+    
 	private static Collection<String> asSet(String... a) {
 		Set<String> result = new HashSet<String>();
 		for (String item : a) {

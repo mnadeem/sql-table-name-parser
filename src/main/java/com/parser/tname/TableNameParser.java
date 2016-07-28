@@ -8,14 +8,18 @@ import java.util.Set;
 
 public final class TableNameParser {
 
+	private static final int NO_INDEX = -1;
 	private static final String SPACE = " ";
 	private static final String REGEX_SPACE = "\\s+";
-
+	
+	private static final String TOKEN_ORACLE_HINT_START = "/*+";
+	private static final String TOKEN_ORACLE_HINT_END = "*/";
 	private static final String TOKEN_SEMI_COLON = ";";
 	private static final String TOKEN_PARAN_START = "(";
 	private static final String TOKEN_COMMA = ",";
 	private static final String TOKEN_SET = "set";
 	private static final String TOKEN_OF = "of";
+	private static final String TOKEN_DUAL = "dual";
 
 	private static final String KEYWORD_JOIN = "join";
 	private static final String KEYWORD_INTO = "into";
@@ -25,13 +29,14 @@ public final class TableNameParser {
 	private static final String KEYWORD_UPDATE = "update";
 
 	private List<String> concerned = Arrays.asList(KEYWORD_TABLE, KEYWORD_INTO, KEYWORD_JOIN, KEYWORD_USING, KEYWORD_UPDATE);
-	private List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF);
+	private List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF, TOKEN_DUAL);
 
 	private Set<String> tables = new HashSet<String>();
 
 	public TableNameParser(final String sql) {
 		String normalized = normalized(sql);
-		String[] tokens = normalized.split(REGEX_SPACE);
+		String cleansed = clean(normalized);
+		String[] tokens = cleansed.split(REGEX_SPACE);
 		int index = 0;
 		while (moreTokens(tokens, index)) {
 			String currentToken = tokens[index++];
@@ -54,20 +59,34 @@ public final class TableNameParser {
 		}
 	}
 
-	private boolean shouldProcess(String currentToken) {
-		return concerned.contains(currentToken.toLowerCase());
-	}
-
-	private boolean isFromToken(String currentToken) {
-		return KEYWORD_FROM.equals(currentToken.toLowerCase());
-	}
-
 	private String normalized(final String sql) {
 		String normalized = sql.replaceAll("\\r\\n|\\r|\\n", SPACE).replaceAll(TOKEN_COMMA, " , ").replaceAll("\\(", " ( ").replaceAll("\\)", " ) ");
 		if (normalized.endsWith(TOKEN_SEMI_COLON)) {
 			normalized = normalized.substring(0, normalized.length() - 1);
 		}
 		return normalized;
+	}
+
+	private String clean(final String normalized) {
+		int start = normalized.indexOf(TOKEN_ORACLE_HINT_START);
+		int end = NO_INDEX;
+		if (start != NO_INDEX) {
+			end = normalized.indexOf(TOKEN_ORACLE_HINT_END);
+			if (end != NO_INDEX) {
+				String firstHalf = normalized.substring(0, start);
+				String secondHalf = normalized.substring(end + 2, normalized.length());
+				return firstHalf.trim() + SPACE + secondHalf.trim();
+			}
+		}
+		return normalized;
+	}
+
+	private boolean shouldProcess(final String currentToken) {
+		return concerned.contains(currentToken.toLowerCase());
+	}
+
+	private boolean isFromToken(final String currentToken) {
+		return KEYWORD_FROM.equals(currentToken.toLowerCase());
 	}
 
 	private void processFromToken(final String[] tokens, int index) {
