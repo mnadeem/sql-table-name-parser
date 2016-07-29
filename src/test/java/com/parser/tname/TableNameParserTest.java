@@ -263,6 +263,12 @@ public final class TableNameParserTest {
 	}
 	
 	@Test
+	public void testOracleSpecialDelete() {
+		String sql = "delete table1 where column_name=xyz";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1")));
+	}
+	
+	@Test
 	public void testAlter() {
 		String sql = "ALTER TABLE Persons ADD UNIQUE (P_Id)";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("persons")));
@@ -276,7 +282,7 @@ public final class TableNameParserTest {
 	
 	@Test
 	public void testDrop() {
-		String sql = "DROP table tname";
+		String sql = "DROP table tname;\n\r";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("tname")));
 	}
 	
@@ -339,6 +345,12 @@ public final class TableNameParserTest {
 	}
 	
 	@Test
+	public void testCreateIndex() {
+		String sql = "CREATE INDEX temp_name_idx ON table1(name) NOLOGGING PARALLEL (DEGREE 8);";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1")));
+	}
+	
+	@Test
 	public void testCreateType() {
 		String sql = "CREATE OR REPLACE TYPE TYPE_NAME IS TABLE OF VARCHAR2(100)";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet()));
@@ -364,10 +376,16 @@ public final class TableNameParserTest {
 
 	@Test
 	public void testUpdateTableSubQueryWithOracleHint() {
-		String sql = "update /*+ PARALLEL OPT_PARAM('parallel_min_percent','0') */ cf_eligible ec set ec.END_DATE = ec.END_DATE + INTERVAL '0 0:0:0.999' DAY TO SECOND WHERE to_char(ec.END_DATE,'FF')='000';";
+		String sql = "update /*+ PARALLEL OPT_PARAM('parallel_min_percent','0') */ cf_eligible ec set ec.END_DATE = ec.END_DATE + INTERVAL '0 0:0:0.999' DAY TO SECOND WHERE to_char(ec.END_DATE,'FF')='000'";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("cf_eligible")));
 	}
     
+	@Test
+	public void testTruncateTable() {
+		String sql = "truncate table eligible_item";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("eligible_item")));
+	}
+	
 	private static Collection<String> asSet(String... a) {
 		Set<String> result = new HashSet<String>();
 		for (String item : a) {
