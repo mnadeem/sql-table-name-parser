@@ -1,0 +1,14 @@
+language: java
+jdk:
+  - oraclejdk7
+  - openjdk7
+  - oraclejdk8
+os:
+  - linux  
+
+script:
+  - mvn test jacoco:report
+after_success:
+  - mvn  coveralls:report 
+
+   
