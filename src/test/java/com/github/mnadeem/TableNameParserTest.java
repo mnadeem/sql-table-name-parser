@@ -1,4 +1,4 @@
-package com.parser.tname;
+package com.github.mnadeem;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -11,15 +11,13 @@ import org.junit.Test;
 
 public final class TableNameParserTest {
 	
-	private static final String SQL_SELECT_SUB_QUERY = "SELECT /*+ materialize*/ cf_strategy_id"
+	private static final String SQL_SELECT_SUB_QUERY = "SELECT /*+ materialize*/ strategy_id"
 													   + "FROM"
 													   + " ( SELECT  strat.cf_strategy_id "
-													   + "   FROM cf_strategy strat,"
-													   + "        struct_doc_sect_ver prodGrp"
+													   + "   FROM strategy strt,"
+													   + "        doc_sect_ver prodGrp"
 													   + "  WHERE  strat.src_id               = prodGrp.struct_doc_sect_id"
-													   + "            AND strat.src_mgr_id     = prodGrp.mgr_id"
-													   + "            AND strat.src_ver_num    = prodGrp.ver_num"
-													   + "           AND strat.module_type   IN ('COMPL','PRCMSTR')"
+													   + "           AND strat.module_type   IN ('sdfdsf','assdf')"
 													  + ")";
 	
 	
@@ -32,9 +30,9 @@ public final class TableNameParserTest {
 													 + "where c.id = 3"
 													 + "  and r.dt =  to_date('22-09-2005','dd-mm-yyyy')";
 	
-	private static final String SQL_COMPLEX_ONE = "INSERT INTO dr_bd_static_product"
+	private static final String SQL_COMPLEX_ONE = "INSERT INTO static_product"
 			  + "  ("
-			   + "   BUNDLE_DISCOUNT_ID,"
+			   + "   DISCOUNT_ID,"
 			  + "    CATEGORY_ID,"
 			  + "    PRODUCT_ID"
 			 + "   )"
@@ -204,7 +202,7 @@ public final class TableNameParserTest {
 	
 	@Test
 	public void testSelectWithSubQuery() {
-		assertThat(new TableNameParser(SQL_SELECT_SUB_QUERY).tables(), equalTo(asSet("cf_strategy", "struct_doc_sect_ver")));
+		assertThat(new TableNameParser(SQL_SELECT_SUB_QUERY).tables(), equalTo(asSet("strategy", "doc_sect_ver")));
 	}
 	
 	@Test
@@ -247,7 +245,7 @@ public final class TableNameParserTest {
 	
 	@Test
 	public void testInsertComplex() {
-		assertThat(new TableNameParser(SQL_COMPLEX_ONE).tables(), equalTo(asSet("dr_bd_static_product", "item", "dr_bundle", "dr_bundle_discount", "dr_bd_product", "map_edge_ver")));
+		assertThat(new TableNameParser(SQL_COMPLEX_ONE).tables(), equalTo(asSet("static_product", "item", "dr_bundle", "dr_bundle_discount", "dr_bd_product", "map_edge_ver")));
 	}
 	
 	@Test
@@ -345,9 +343,27 @@ public final class TableNameParserTest {
 	}
 	
 	@Test
+	public void testCreateGlobalTable() {
+		String sql = "CREATE GLOBAL TEMPORARY TABLE excl_cust (gen_name VARCHAR2(100),run_date TIMESTAMP(3), item_root_uuid  VARCHAR2(22), owner_member_id  NUMBER(20)) ON COMMIT DELETE ROWS";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("excl_cust")));
+	}
+	
+	@Test
 	public void testCreateIndex() {
 		String sql = "CREATE INDEX temp_name_idx ON table1(name) NOLOGGING PARALLEL (DEGREE 8);";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1")));
+	}
+	
+	@Test
+	public void testCreateView() {
+		String sql = "CREATE VIEW dept AS SELECT * FROM dept;";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("dept")));
+	}
+	
+	@Test
+	public void testCreateView2() {
+		String sql = "CREATE VIEW division1_staff AS SELECT ename, empno, job, dname FROM emp, dept WHERE emp.deptno IN (10, 30) AND emp.deptno = dept.deptno;";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("dept","emp")));
 	}
 	
 	@Test
@@ -376,8 +392,8 @@ public final class TableNameParserTest {
 
 	@Test
 	public void testUpdateTableSubQueryWithOracleHint() {
-		String sql = "update /*+ PARALLEL OPT_PARAM('parallel_min_percent','0') */ cf_eligible ec set ec.END_DATE = ec.END_DATE + INTERVAL '0 0:0:0.999' DAY TO SECOND WHERE to_char(ec.END_DATE,'FF')='000'";
-		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("cf_eligible")));
+		String sql = "update /*+ PARALLEL OPT_PARAM('parallel_min_percent','0') */ eligible ec set ec.END_DATE = ec.END_DATE + INTERVAL '0 0:0:0.999' DAY TO SECOND";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("eligible")));
 	}
     
 	@Test

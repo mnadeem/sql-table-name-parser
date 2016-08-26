@@ -1,4 +1,4 @@
-package com.parser.tname;
+package com.github.mnadeem;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -8,7 +8,6 @@ import java.util.Set;
 
 public final class TableNameParser {
 
-	private static final String TOKEN_ASTERICK = "*";
 	private static final int NO_INDEX = -1;
 	private static final String SPACE = " ";
 	private static final String REGEX_SPACE = "\\s+";
@@ -24,6 +23,7 @@ public final class TableNameParser {
 	private static final String TOKEN_DELETE = "delete";
 	private static final String TOKEN_CREATE = "create";
 	private static final String TOKEN_INDEX = "index";
+	private static final String TOKEN_ASTERICK = "*";
 
 	private static final String KEYWORD_JOIN = "join";
 	private static final String KEYWORD_INTO = "into";
@@ -89,7 +89,7 @@ public final class TableNameParser {
 		}
 		return normalized;
 	}
-	
+
 	private boolean isOracleSpecialDelete(final String currentToken, final String[] tokens, int index) {
 		index++;// Point to next token
 		if (TOKEN_DELETE.equals(currentToken)) {

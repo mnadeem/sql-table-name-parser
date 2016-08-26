@@ -1,5 +1,8 @@
 # SQL Table Name Parser
 
+[![Build Status](https://travis-ci.org/mnadeem/sql-table-name-parser.svg?branch=master)](https://travis-ci.org/mnadeem/sql-table-name-parser)
+
+
 Regular Expressions are not full proof solution for extracting table names from SQL queries... As tons of things has to be considered, which would be trickier to express in RegX, and would break out in one or other cases....
 
 Then what?? Full proof sql parsers like [JSQL parser](https://github.com/JSQLParser/JSqlParser) , [ZQL Library](http://zql.sourceforge.net/), [SQL Parser](http://www.sqlparser.com/)??
