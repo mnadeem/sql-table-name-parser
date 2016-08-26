@@ -7,12 +7,38 @@
 
 	<name>SQL Table Name Parser</name>
 	<url>https://github.com/mnadeem/sql-table-name-parser</url>
-	<description>Ulta fast, Ultra small library to extract table names from SQL</description>
+	<description>Ulta fast, Ultra small library to extract table names from SQLs</description>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
 		<name>mnadeem</name>
 		<url>https://github.com/mnadeem</url>
 	</organization>
+	
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<issueManagement>
+		<system>Github</system>
+		<url>https://github.com/mnadeem/sql-table-name-parser/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis</system>
+		<url>https://travis-ci.org/mnadeem/sql-table-name-parser</url>
+	</ciManagement>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 	<developers>
 		<developer>
@@ -77,15 +103,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<issueManagement>
-		<system>Github</system>
-		<url>https://github.com/mnadeem/sql-table-name-parser/issues</url>
-	</issueManagement>
-	<ciManagement>
-		<system>Travis</system>
-		<url>https://travis-ci.org/mnadeem/sql-table-name-parser</url>
-	</ciManagement>
 	
 	<build>
 		<plugins>
