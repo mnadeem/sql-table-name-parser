@@ -28,7 +28,7 @@ SQL Table Name Parser is licensed under **Apache Software License, Version 2.0**
 
 ## News
 
-* Version **0.0.1** released on 08/27/2016.
+* Version **0.0.2** released on 08/27/2016.
 
 
 ## Maven Repository
