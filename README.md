@@ -4,6 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/mnadeem/sql-table-name-parser/badge.svg)](https://coveralls.io/github/mnadeem/sql-table-name-parser)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mnadeem/sql-table-name-parser/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.mnadeem/sql-table-name-parser)
 [![Dependency Status](https://www.versioneye.com/user/projects/57c0512d968d6400395168f8/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/57c0512d968d6400395168f8)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/10020/badge.svg)](https://scan.coverity.com/projects/mnadeem-sql-table-name-parser)
 
 
 Regular Expressions are not full proof solution for extracting table names from SQL queries... As tons of things has to be considered, which would be trickier to express in RegX, and would break out in one or other cases....
