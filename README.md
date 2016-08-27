@@ -53,7 +53,7 @@ Alternatively you can  pull it from the central maven repository, just add these
 <dependency>
     <groupId>com.github.mnadeem</groupId>
     <artifactId>sql-table-name-parser</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
