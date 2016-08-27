@@ -171,7 +171,7 @@ public final class TableNameParserTest {
 	
 	@Test
 	public void testSelectTwoTables() {
-		String sql = "SELECT name, age FROM table1,table2 group by xyx";
+		String sql = "SELECT name, age FROM table1,table2";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
 	}
 	

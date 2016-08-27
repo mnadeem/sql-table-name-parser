@@ -160,7 +160,11 @@ public final class TableNameParser {
 		while (nextToken.equals(TOKEN_COMMA)) {
 			String currentToken = tokens[index++];
 			considerInclusion(currentToken);
-			nextToken = tokens[index++];
+			if (moreTokens(tokens, index)) {				
+				nextToken = tokens[index++];
+			} else {
+				break;
+			}
 		}
 	}
 
