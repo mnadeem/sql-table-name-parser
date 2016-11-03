@@ -245,13 +245,13 @@ public final class TableNameParserTest {
 	
 	@Test
 	public void testInsertComplex() {
-		assertThat(new TableNameParser(SQL_COMPLEX_ONE).tables(), equalTo(asSet("static_product", "item", "dr_bundle", "dr_bundle_discount", "dr_bd_product", "map_edge_ver")));
+		assertThat(new TableNameParser(SQL_COMPLEX_ONE).tables(), equalTo(asSet("static_product", "DR_BD_PRODUCT", "DR_BUNDLE", "map_edge_ver", "ITEM", "DR_BUNDLE_DISCOUNT")));
 	}
 	
 	@Test
 	public void testInsertWithSelect() {
 		String sql = "INSERT INTO Customers (CustomerName, Country) SELECT SupplierName, Country FROM Suppliers;";
-		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("customers", "suppliers")));
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("Customers", "Suppliers")));
 	}
 
 	@Test
@@ -269,7 +269,7 @@ public final class TableNameParserTest {
 	@Test
 	public void testAlter() {
 		String sql = "ALTER TABLE Persons ADD UNIQUE (P_Id)";
-		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("persons")));
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("Persons")));
 	}
 
 	@Test
@@ -328,7 +328,7 @@ public final class TableNameParserTest {
 	
 	@Test
 	public void testMergeComplexQuery() {
-		assertThat(new TableNameParser(SQL_MERGE_COMPLEX).tables(), equalTo(asSet("non_strategy_comps","cf_procedure", "struct_doc_sect_ver", "cf_period", "cf_component", "cf_strategy", "tier_basis_ver", "non_strategy_details", "cf_procedure", "non_strat_periods")));
+		assertThat(new TableNameParser(SQL_MERGE_COMPLEX).tables(), equalTo(asSet("non_strategy_comps","cf_procedure", "struct_doc_Sect_ver", "cf_period", "cf_component", "cf_strategy", "tier_basis_ver", "non_strategy_details", "cf_procedure", "non_strat_periods")));
 	}
 	
 	@Test
@@ -339,7 +339,7 @@ public final class TableNameParserTest {
 	@Test
 	public void testCreateTable() {
 		String sql = "CREATE TABLE Persons(PersonID int,LastName varchar(255),FirstName varchar(255),Address varchar(255),City varchar(255));";
-		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("persons")));
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("Persons")));
 	}
 	
 	@Test
@@ -375,7 +375,7 @@ public final class TableNameParserTest {
 	@Test
 	public void testUpdateTable() {
 		String sql = "UPDATE tableName SET column1 = expression1, column2 = expression2";
-		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("tablename")));
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("tableName")));
 	}
 
 	@Test

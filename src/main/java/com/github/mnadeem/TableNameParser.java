@@ -2,9 +2,10 @@ package com.github.mnadeem;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public final class TableNameParser {
 
@@ -36,7 +37,7 @@ public final class TableNameParser {
 			KEYWORD_UPDATE);
 	private List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF, TOKEN_DUAL);
 
-	private Set<String> tables = new HashSet<String>();
+	private Map<String, String> tables = new HashMap<String, String>();
 
 	public TableNameParser(final String sql) {
 		String normalized = normalized(sql);
@@ -199,12 +200,12 @@ public final class TableNameParser {
 	}
 
 	private void considerInclusion(final String token) {
-		if (!this.ignored.contains(token.toLowerCase())) {
-			this.tables.add(token.toLowerCase());
+		if (!this.ignored.contains(token.toLowerCase()) && !this.tables.containsKey(token.toLowerCase())) {
+			this.tables.put(token.toLowerCase(), token);
 		}
 	}
 
 	public Collection<String> tables() {
-		return new HashSet<String>(this.tables);
+		return new HashSet<String>(this.tables.values());
 	}
 }
