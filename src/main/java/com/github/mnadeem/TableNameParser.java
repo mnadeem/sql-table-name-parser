@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.mnadeem;
 
 import java.util.Arrays;
@@ -6,7 +22,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * Ultra light, Ultra fast parser to extract table name out SQLs, supports oracle dialect SQLs as well.
+ * @author Nadeem Mohammad
+ *
+ */
 public final class TableNameParser {
 
 	private static final int NO_INDEX = -1;
@@ -38,7 +58,10 @@ public final class TableNameParser {
 	private List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF, TOKEN_DUAL);
 
 	private Map<String, String> tables = new HashMap<String, String>();
-
+	/**
+	 * Extracts table names out of SQL
+	 * @param sql
+	 */
 	public TableNameParser(final String sql) {
 		String normalized = normalized(sql);
 		String cleansed = clean(normalized);
@@ -204,7 +227,10 @@ public final class TableNameParser {
 			this.tables.put(token.toLowerCase(), token);
 		}
 	}
-
+	/**
+	 * 
+	 * @return table names extracted out of sql
+	 */
 	public Collection<String> tables() {
 		return new HashSet<String>(this.tables.values());
 	}
