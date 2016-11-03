@@ -69,9 +69,10 @@ This will produce the sql-table-name-parser-VERSION.jar file under the target di
 If you need help using this library feel free to drop an email or create an issue in github.com (preferred)
 
 ## Contributions
-To help development you are encouraged to provide 
-* Suggestion/feedback/Issue
+To help Dexecutor development you are encouraged to  
+* Provide suggestion/feedback/Issue
 * pull requests for new features
+* Star :star2: the project
 
 [![View My profile on LinkedIn](https://static.licdn.com/scds/common/u/img/webpromo/btn_viewmy_160x33.png)](https://in.linkedin.com/pub/nadeem-mohammad/17/411/21)
 	
