@@ -53,9 +53,8 @@ public final class TableNameParser {
 	private static final String KEYWORD_USING = "using";
 	private static final String KEYWORD_UPDATE = "update";
 
-	private List<String> concerned = Arrays.asList(KEYWORD_TABLE, KEYWORD_INTO, KEYWORD_JOIN, KEYWORD_USING,
-			KEYWORD_UPDATE);
-	private List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF, TOKEN_DUAL);
+	private static final List<String> concerned = Arrays.asList(KEYWORD_TABLE, KEYWORD_INTO, KEYWORD_JOIN, KEYWORD_USING, KEYWORD_UPDATE);
+	private static final List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF, TOKEN_DUAL);
 
 	private Map<String, String> tables = new HashMap<String, String>();
 	/**
@@ -223,7 +222,7 @@ public final class TableNameParser {
 	}
 
 	private void considerInclusion(final String token) {
-		if (!this.ignored.contains(token.toLowerCase()) && !this.tables.containsKey(token.toLowerCase())) {
+		if (!ignored.contains(token.toLowerCase()) && !this.tables.containsKey(token.toLowerCase())) {
 			this.tables.put(token.toLowerCase(), token);
 		}
 	}
