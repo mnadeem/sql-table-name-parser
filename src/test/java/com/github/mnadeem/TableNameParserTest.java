@@ -210,6 +210,12 @@ public final class TableNameParserTest {
 	}
 	
 	@Test
+	public void testSelectTwoTablesWithAliaseAndNoCondition() {
+		String sql = "select xx from table1 a,table2 b";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2")));
+	}
+	
+	@Test
 	public void testSelectThreeTablesWithAliase() {
 		String sql = "SELECT name, age FROM table1 t1,table2 t2, table3 t3 whatever group by xyx";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("table1", "table2", "table3")));

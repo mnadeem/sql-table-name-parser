@@ -198,7 +198,7 @@ public final class TableNameParser {
 		}
 
 		if (shouldProcessMultipleTables(nextNextToken)) {
-			while (nextNextToken.equals(TOKEN_COMMA)) {
+			while (moreTokens(tokens, index) && nextNextToken.equals(TOKEN_COMMA)) {
 				if (moreTokens(tokens, index)) {
 					currentToken = tokens[index++];
 				}
