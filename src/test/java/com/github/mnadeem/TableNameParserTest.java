@@ -423,7 +423,55 @@ public final class TableNameParserTest {
 		String sql = "truncate table eligible_item";
 		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("eligible_item")));
 	}
-	
+
+	@Test
+	public void testSqlWithComment() {
+		String sql = "select * from foo -- this is a comment";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo")));
+	}
+
+	@Test
+	public void testSqlWithCommentContainingKeyword() {
+		String sql = "select * from foo -- what happens if I say update in a comment";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo")));
+	}
+
+	@Test
+	public void testSqlWithCommentEndingWithKeyword() {
+		String sql = "select * from foo -- what happens if I end a comment with an update";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo")));
+	}
+
+	@Test
+	public void testSqlWithCommentInTheMiddle() {
+		String sql = "select * -- I like stars \n from foo";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo")));
+	}
+
+	@Test
+	public void testSqlWithCommentInTheMiddleAndEnd() {
+		String sql = "select * -- I like stars \n from foo -- comment ending with update";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo")));
+	}
+
+	@Test
+	public void testSqlWithMultipleCommentsInTheMiddle() {
+		String sql = "select * -- I like stars \n from foo f -- I like foo \n join bar b -- I also like bar \n on f.id = b.id";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo","bar")));
+	}
+
+	@Test
+	public void testSqlWithMultipleCommentsAndNewlines() {
+		String sql = "select * -- I like stars \n from foo f -- I like foo \n\n join bar b -- I also like bar \n on f.id = b.id";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo","bar")));
+	}
+
+	@Test
+	public void testSqlWithMultipleCommentsInTheMiddleAndEnd() {
+		String sql = "select * -- I like stars \n from foo f -- I like foo \n join bar b -- I also like bar \n on f.id = b.id -- comment ending with update";
+		assertThat(new TableNameParser(sql).tables(), equalTo(asSet("foo","bar")));
+	}
+
 	private static Collection<String> asSet(String... a) {
 		Set<String> result = new HashSet<String>();
 		for (String item : a) {

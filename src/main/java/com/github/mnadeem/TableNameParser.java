@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Ultra light, Ultra fast parser to extract table name out SQLs, supports oracle dialect SQLs as well.
  * @author Nadeem Mohammad
@@ -35,6 +38,8 @@ public final class TableNameParser {
 
 	private static final String TOKEN_ORACLE_HINT_START = "/*+";
 	private static final String TOKEN_ORACLE_HINT_END = "*/";
+	private static final String TOKEN_SINGLE_LINE_COMMENT = "--";
+	private static String TOKEN_NEWLINE = "\\r\\n|\\r|\\n|\\n\\r";
 	private static final String TOKEN_SEMI_COLON = ";";
 	private static final String TOKEN_PARAN_START = "(";
 	private static final String TOKEN_COMMA = ",";
@@ -57,12 +62,14 @@ public final class TableNameParser {
 	private static final List<String> ignored = Arrays.asList(TOKEN_PARAN_START, TOKEN_SET, TOKEN_OF, TOKEN_DUAL);
 
 	private Map<String, String> tables = new HashMap<String, String>();
+
 	/**
 	 * Extracts table names out of SQL
 	 * @param sql
 	 */
 	public TableNameParser(final String sql) {
-		String normalized = normalized(sql);
+		String nocomments = removeComments(sql);
+		String normalized = normalized(nocomments);
 		String cleansed = clean(normalized);
 		String[] tokens = cleansed.split(REGEX_SPACE);
 		int index = 0;
@@ -90,8 +97,29 @@ public final class TableNameParser {
 		}
 	}
 
+	private String removeComments(final String sql) {
+		StringBuilder sb = new StringBuilder(sql);
+		int nextCommentPosition = sb.indexOf(TOKEN_SINGLE_LINE_COMMENT);
+		while (nextCommentPosition > -1) {
+			int end = indexOfRegex(TOKEN_NEWLINE, sb.substring(nextCommentPosition));
+			if (end == -1) {
+				return sb.substring(0, nextCommentPosition);
+			} else {
+				sb.replace(nextCommentPosition, end + nextCommentPosition, "");
+			}
+			nextCommentPosition = sb.indexOf(TOKEN_SINGLE_LINE_COMMENT);
+		}
+		return sb.toString();
+	}
+
+	private int indexOfRegex(String regex, String string) {
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(string);
+		return matcher.find() ? matcher.start() : -1;
+	}
+
 	private String normalized(final String sql) {
-		String normalized = sql.trim().replaceAll("\\r\\n|\\r|\\n|\\n\\r", SPACE).replaceAll(TOKEN_COMMA, " , ")
+		String normalized = sql.trim().replaceAll(TOKEN_NEWLINE, SPACE).replaceAll(TOKEN_COMMA, " , ")
 				.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ");
 		if (normalized.endsWith(TOKEN_SEMI_COLON)) {
 			normalized = normalized.substring(0, normalized.length() - 1);
