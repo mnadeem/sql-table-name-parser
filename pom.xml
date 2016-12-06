@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.mnadeem</groupId>
 	<artifactId>sql-table-name-parser</artifactId>
-	<version>0.0.5-SNAPSHOT</version>
+	<version>0.0.5</version>
 
 	<name>SQL Table Name Parser</name>
 	<url>https://github.com/mnadeem/sql-table-name-parser</url>
@@ -53,7 +53,7 @@
 		<connection>scm:git:git://github.com/mnadeem/sql-table-name-parser.git</connection>
 		<developerConnection>scm:git:git@github.com:mnadeem/sql-table-name-parser.git</developerConnection>
 		<url>https://github.com/mnadeem/sql-table-name-parser</url>
-		<tag>HEAD</tag>
+		<tag>sql-table-name-parser-0.0.5</tag>
 	</scm>
 	
 	<properties>
