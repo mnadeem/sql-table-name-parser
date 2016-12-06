@@ -27,6 +27,7 @@ SQL Table Name Parser is licensed under **Apache Software License, Version 2.0**
 
 ## News
 
+* Version **0.0.5** released on 12/06/2016.
 * Version **0.0.4** released on 11/19/2016.
 * Version **0.0.3** released on 11/03/2016.
 * Version **0.0.2** released on 08/27/2016.
@@ -54,7 +55,7 @@ Alternatively you can  pull it from the central maven repository, just add these
 <dependency>
     <groupId>com.github.mnadeem</groupId>
     <artifactId>sql-table-name-parser</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
